@@ -1,6 +1,6 @@
 import unittest
 
-from release_notes import group_commits, render
+from release_notes import filter_groups, group_commits, render
 
 
 class ReleaseNotesTests(unittest.TestCase):
@@ -16,6 +16,14 @@ class ReleaseNotesTests(unittest.TestCase):
         output = render({"feat": ["add output"]}, "v1.0.0")
         self.assertIn("# v1.0.0", output)
         self.assertIn("## Features", output)
+
+    def test_filter_groups_keeps_requested_kinds(self):
+        groups = {"feat": ["add output"], "fix": ["handle input"]}
+        self.assertEqual(filter_groups(groups, ["fix"]), {"fix": ["handle input"]})
+
+    def test_filter_groups_without_filter_returns_all(self):
+        groups = {"feat": ["add output"], "fix": ["handle input"]}
+        self.assertEqual(filter_groups(groups, None), groups)
 
 
 if __name__ == "__main__":

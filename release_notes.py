@@ -42,13 +42,28 @@ def render(groups: dict[str, list[str]], title: str) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def filter_groups(groups: dict[str, list[str]], kinds: list[str] | None) -> dict[str, list[str]]:
+    """Keep only the requested commit categories, preserving their order."""
+    if not kinds:
+        return groups
+    selected = set(kinds)
+    return {kind: messages for kind, messages in groups.items() if kind in selected}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate release notes from Git commits")
     parser.add_argument("start", help="starting Git ref")
     parser.add_argument("end", help="ending Git ref")
     parser.add_argument("--title", default="Release Notes", help="document title")
+    parser.add_argument(
+        "--kind",
+        action="append",
+        choices=("feat", "fix", "docs", "other"),
+        help="include only this commit type; repeat to include multiple types",
+    )
     args = parser.parse_args()
-    print(render(group_commits(read_commits(args.start, args.end)), args.title), end="")
+    groups = group_commits(read_commits(args.start, args.end))
+    print(render(filter_groups(groups, args.kind), args.title), end="")
     return 0
 
 
